@@ -49,13 +49,15 @@ var findReplace = function(context) {
 		// Show dialog
 		var alert = createDialog();
 		var options=handleAlertResponse(alert,alert.runModal());
-    log(options)
 
     // Run on all selections
     for (var i=0; i<selectionCount; i++) {
         var layer = selection[i];
         var name = replaceText([layer name], i, options.findText, options.replaceWith, doc);
         [layer setName:name];
+		
+		// Prevent textlayer name from being renamed after editing
+		layer.nameIsFixed = 1;
 
     	// Success message
     	[doc showMessage: "Rename it: Updated "+selectionCount+" layer(s)"];

@@ -1,7 +1,6 @@
 // The Brain
 function rename(layerName, currIdx, width, height, selectionCount, basename, startsFrom) {
 	var newLayerName = basename;
-
   // Interator
   var nInterators = newLayerName.match(/%N+/ig),
 			aInterators = newLayerName.match(/%A/ig),
@@ -98,7 +97,7 @@ function createDialog()
 	}
 
 	alert.setMessageText("Rename Selected Layers");
-	alert.setInformativeText("Helpers: \nNumber Sequence: %N or %n \nDimensions: %W %H \nMove Original Layer Name: *");
+	alert.setInformativeText("Helpers: \nNumber Sequence: %N Descending | %n Ascending \nDimensions: %W %H \nMove Original Layer Name: *");
 
 	// Name
 	createTextFieldWithLabel("Name:","");
@@ -119,36 +118,11 @@ function createDialog()
 	return alert;
 }
 
-// Run
-var renameSelectedLayers = function(context) {
-	var selection = context.selection
-	var selectionCount = [selection count]
-	var doc = context.document
-  if (selectionCount > 0)
-  {
-		// Show dialog
-		var alert = createDialog();
-		var options=handleAlertResponse(alert,alert.runModal());
-		if (!options.startsFrom) options.startsFrom = 1;
-
-    // Run on all selections
-    for (var i=0; i<selectionCount; i++) {
-        var layer = selection[i],
-            frame = [layer frame],
-            width = [frame width],
-            height = [frame height];
-        var name = rename([layer name], i, width, height, selectionCount, options.basename, options.startsFrom);
-        [layer setName:name];
-
-    // Success message
-        [doc showMessage: "Rename it: Updated "+selectionCount+" layer(s)"];
-    }
-  }
-  else
-  {
-      // No layer selected
-      [doc showMessage: "Rename it: You need to select at least one layer"];
-  }
+// Check if interger
+function isInt(value) {
+  return !isNaN(value) &&
+         parseInt(Number(value)) == value &&
+         !isNaN(parseInt(value, 10));
 }
 
 function handleAlertResponse(alert, responseCode) {
@@ -164,4 +138,39 @@ function handleAlertResponse(alert, responseCode) {
 		}
 
 		return null;
+}
+
+// Run
+var renameSelectedLayers = function(context) {
+	var selection = context.selection
+	var selectionCount = [selection count]
+	var doc = context.document
+  if (selectionCount > 0)
+  {
+		// Show dialog
+		var alert = createDialog();
+		var options=handleAlertResponse(alert,alert.runModal());
+		if (!isInt(options.startsFrom)) options.startsFrom = 1;
+
+    // Run on all selections
+    for (var i=0; i<selectionCount; i++) {
+        var layer = selection[i],
+            frame = [layer frame],
+            width = [frame width],
+            height = [frame height];
+        var name = rename([layer name], i, width, height, selectionCount, options.basename, options.startsFrom);
+        [layer setName:name];
+		
+		// Prevent textlayer name from being renamed after editing
+		layer.nameIsFixed = 1;
+
+    // Success message
+        [doc showMessage: "Rename it: Updated "+selectionCount+" layer(s)"];
+    }
+  }
+  else
+  {
+      // No layer selected
+      [doc showMessage: "Rename it: You need to select at least one layer"];
+  }
 }
